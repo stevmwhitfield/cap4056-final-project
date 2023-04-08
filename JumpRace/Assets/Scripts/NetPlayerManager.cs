@@ -6,8 +6,8 @@ using TMPro;
 
 public class NetPlayerManager : NetworkComponent {
   #region FIELDS
-  public string username;
-  public bool isReady;
+  public string username = "";
+  public bool isReady = false;
 
   public TMP_InputField NameInput;
   public Button IsReadyButton;
@@ -25,7 +25,7 @@ public class NetPlayerManager : NetworkComponent {
 
     try {
       Transform playerHolderTransform = GameObject.FindGameObjectWithTag("PlayerHolder").transform;
-      this.transform.SetParent(playerHolderTransform);
+      transform.SetParent(playerHolderTransform);
     }
     catch {
       Debug.Log("ERROR: Object with tag \"PlayerHolder\" not found!");
@@ -46,8 +46,7 @@ public class NetPlayerManager : NetworkComponent {
     }
 
     if (flag == "READY") {
-      Debug.Log("FLAG: READY");
-      this.isReady = true;
+      isReady = bool.Parse(value);
 
       if (IsServer) {
         SendUpdate(flag, value);
@@ -60,8 +59,8 @@ public class NetPlayerManager : NetworkComponent {
         }
 
         if (IsLocalPlayer) {
-          NameInput.interactable = false;
-          IsReadyButton.interactable = false;
+          NameInput.gameObject.SetActive(false);
+          IsReadyButton.gameObject.SetActive(false);
         }
       }
     }
@@ -78,11 +77,11 @@ public class NetPlayerManager : NetworkComponent {
         }
       }
       if (IsLocalPlayer) {
-        if (this.username == "") {
-          this.IsReadyButton.interactable = false;
+        if (username == "") {
+          IsReadyButton.interactable = false;
         }
         else {
-          this.IsReadyButton.interactable = true;
+          IsReadyButton.interactable = true;
         }
       }
       yield return new WaitForSeconds(0.1f);
@@ -109,7 +108,9 @@ public class NetPlayerManager : NetworkComponent {
 
   public void SetIsReady() {
     if (IsLocalPlayer) {
-      SendCommand("READY", true.ToString());
+      if (!isReady) {
+        SendCommand("READY", true.ToString());
+      }
     }
   }
   #endregion
