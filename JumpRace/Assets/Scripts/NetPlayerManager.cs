@@ -6,10 +6,10 @@ using TMPro;
 
 public class NetPlayerManager : NetworkComponent {
   #region FIELDS
-  private string username;
-  private string isReady;
+  public string username;
+  public bool isReady;
 
-  public InputField NameInput;
+  public TMP_InputField NameInput;
   public Button IsReadyButton;
   public TMP_Text NameText;
   public TMP_Text IsReadyText;
@@ -40,29 +40,53 @@ public class NetPlayerManager : NetworkComponent {
         SendUpdate(flag, value);
       }
 
-      if (IsClient && !IsLocalPlayer) {
+      if (IsClient) {
         NameText.text = value;
       }
     }
 
     if (flag == "READY") {
-      this.isReady = value;
+      Debug.Log("FLAG: READY");
+      this.isReady = true;
 
       if (IsServer) {
         SendUpdate(flag, value);
       }
 
-      if (IsClient && !IsLocalPlayer) {
-        IsReadyText.text = "Ready";
-        IsReadyText.color = new Color32(57, 255, 20, 255);
-        IsReadyButton.interactable = false;
+      if (isReady) {
+        if (IsClient) {
+          IsReadyText.text = "Ready";
+          IsReadyText.color = new Color32(57, 255, 20, 255);
+        }
+
+        if (IsLocalPlayer) {
+          NameInput.interactable = false;
+          IsReadyButton.interactable = false;
+        }
       }
     }
 
   }
 
   public override IEnumerator SlowUpdate() {
-    yield return new WaitForSeconds(0.1f);
+    while (IsConnected) {
+      if (IsServer) {
+        if (IsDirty) {
+          SendUpdate("NAME", username);
+          SendUpdate("READY", isReady.ToString());
+          IsDirty = false;
+        }
+      }
+      if (IsLocalPlayer) {
+        if (this.username == "") {
+          this.IsReadyButton.interactable = false;
+        }
+        else {
+          this.IsReadyButton.interactable = true;
+        }
+      }
+      yield return new WaitForSeconds(0.1f);
+    }
   }
   #endregion
 
@@ -83,9 +107,9 @@ public class NetPlayerManager : NetworkComponent {
     }
   }
 
-  public void SetIsReady(bool isReady) {
+  public void SetIsReady() {
     if (IsLocalPlayer) {
-      SendCommand("READY", isReady.ToString());
+      SendCommand("READY", true.ToString());
     }
   }
   #endregion
