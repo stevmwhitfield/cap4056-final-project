@@ -6,8 +6,8 @@ using TMPro;
 
 public class NetPlayerManager : NetworkComponent {
   #region FIELDS
-  public string username = "";
-  public bool isReady = false;
+  public string Name { get; set; } = "";
+  public bool IsReady { get; set; } = false;
 
   public TMP_InputField NameInput;
   public Button IsReadyButton;
@@ -34,7 +34,7 @@ public class NetPlayerManager : NetworkComponent {
 
   public override void HandleMessage(string flag, string value) {
     if (flag == "NAME") {
-      this.username = value;
+      Name = value;
 
       if (IsServer) {
         SendUpdate(flag, value);
@@ -46,13 +46,13 @@ public class NetPlayerManager : NetworkComponent {
     }
 
     if (flag == "READY") {
-      isReady = bool.Parse(value);
+      IsReady = bool.Parse(value);
 
       if (IsServer) {
         SendUpdate(flag, value);
       }
 
-      if (isReady) {
+      if (IsReady) {
         if (IsClient) {
           IsReadyText.text = "Ready";
           IsReadyText.color = new Color32(57, 255, 20, 255);
@@ -71,13 +71,13 @@ public class NetPlayerManager : NetworkComponent {
     while (IsConnected) {
       if (IsServer) {
         if (IsDirty) {
-          SendUpdate("NAME", username);
-          SendUpdate("READY", isReady.ToString());
+          SendUpdate("NAME", Name);
+          SendUpdate("READY", IsReady.ToString());
           IsDirty = false;
         }
       }
       if (IsLocalPlayer) {
-        if (username == "") {
+        if (Name == "") {
           IsReadyButton.interactable = false;
         }
         else {
@@ -100,15 +100,15 @@ public class NetPlayerManager : NetworkComponent {
   #endregion
 
   #region M_UI
-  public void SetUsername(string username) {
+  public void SetName(string name) {
     if (IsLocalPlayer) {
-      SendCommand("NAME", username);
+      SendCommand("NAME", name);
     }
   }
 
   public void SetIsReady() {
     if (IsLocalPlayer) {
-      if (!isReady) {
+      if (!IsReady) {
         SendCommand("READY", true.ToString());
       }
     }

@@ -24,6 +24,6 @@ public class PlayerController : NetworkComponent {
 
   void Update() {
 
-  } 
+  }
   #endregion
 }

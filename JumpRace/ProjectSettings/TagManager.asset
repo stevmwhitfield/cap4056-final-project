@@ -6,6 +6,9 @@ TagManager:
   tags:
   - Root
   - PlayerHolder
+  - ScoreHolder
+  - Level
+  - SpawnPoint
   layers:
   - Default
   - TransparentFX
