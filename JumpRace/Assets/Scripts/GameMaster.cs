@@ -85,7 +85,7 @@ public class GameMaster : NetworkComponent {
   #endregion
 
   private IEnumerator GameTimer() {
-    yield return new WaitForSecondsRealtime(5f);
+    yield return new WaitForSecondsRealtime(300f);
     isGameRunning = false;
     isGameOver = true;
   }
@@ -122,8 +122,8 @@ public class GameMaster : NetworkComponent {
     foreach (NetPlayerManager npm in netPlayerManagers) {
       // Create players and set spawn position
       int playerType = 0;
-      GameObject player = MyCore.NetCreateObject(playerType, npm.Owner);
-      player.transform.position = spawnPoints[i].transform.position;
+      GameObject player = MyCore.NetCreateObject(playerType, npm.Owner, spawnPoints[i].transform.position);
+      player.GetComponent<NetPlayerController>().Name = npm.Name;
       i += 1;
     }
 
