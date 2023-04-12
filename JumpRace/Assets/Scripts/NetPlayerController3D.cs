@@ -4,9 +4,9 @@ using UnityEngine.InputSystem;
 using TMPro;
 using NETWORK_ENGINE;
 
-public class NetPlayerController : NetworkComponent {
+public class NetPlayerController3D : NetworkComponent {
   #region FIELDS
-  public Rigidbody2D rb;
+  public Rigidbody rb;
   public Vector2 lastInput;
   public float speed = 5.0f;
   public bool canJump = true;
@@ -20,9 +20,9 @@ public class NetPlayerController : NetworkComponent {
   #region M_NETWORK_ENGINE
   public override void NetworkedStart() {
     if (IsServer) {
-      rb = GetComponent<Rigidbody2D>();
+      rb = GetComponent<Rigidbody>();
       if (rb == null) {
-        throw new System.Exception($"ERROR: {name} is missing a Rigidbody2D component!");
+        throw new System.Exception($"ERROR: {name} is missing a Rigidbody component!");
       }
     }
   }
@@ -68,8 +68,8 @@ public class NetPlayerController : NetworkComponent {
 
   void Update() {
     if (IsServer) {
-      Vector2 currentVerticalVelocity = new Vector2(0, rb.velocity.y);
-      rb.velocity = new Vector2(lastInput.x, 0) * speed + currentVerticalVelocity;
+      Vector3 currentVerticalVelocity = new Vector3(0, rb.velocity.y, 0);
+      rb.velocity = new Vector3(lastInput.x, 0, 0) * speed + currentVerticalVelocity;
     }
 
     if (IsClient) {
