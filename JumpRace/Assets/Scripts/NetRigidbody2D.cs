@@ -21,17 +21,15 @@ public class NetRigidbody2D : NetworkComponent {
   public override void NetworkedStart() { }
 
   public override void HandleMessage(string flag, string value) {
-    if (flag == "POS") {
-      if (IsServer) {
-        Debug.Log($"SERVER: {name} NetRigidbody2D: {flag}, {value}");
-      }
-      if (IsClient) {
-        Debug.Log($"CLIENT: {name} NetRigidbody2D: {flag}, {value}");
-      }
-      if (IsLocalPlayer) {
-        Debug.Log($"LOCAL: {name} NetRigidbody2D: {flag}, {value}");
-      }
+    if (IsServer) {
+      Debug.Log($"SERVER: {name} NetRigidbody2D: {flag}, {value}");
+    }
+    else if (IsClient) {
+      Debug.Log($"CLIENT: {name} NetRigidbody2D: {flag}, {value}");
+    }
 
+
+    if (flag == "POS") {
       if (IsClient) {
         lastPosition = Parser.ParseVector2(value);
 
@@ -45,27 +43,20 @@ public class NetRigidbody2D : NetworkComponent {
           adaptiveVelocity = (lastPosition - rb.position).normalized * speed * Time.deltaTime;
         }
       }
+    }
 
-      if (flag == "VEL") {
-        if (IsServer) {
-          Debug.Log($"SERVER: {name} NetRigidbody2D: {flag}, {value}");
-        }
-        if (IsClient) {
-          Debug.Log($"CLIENT: {name} NetRigidbody2D: {flag}, {value}");
-        }
-        if (IsLocalPlayer) {
-          Debug.Log($"LOCAL: {name} NetRigidbody2D: {flag}, {value}");
-        }
+    if (flag == "VEL") {
+      Debug.Log($"NetRigidbody2D: HandleMessage(): flag={flag}, value={value}");
+      if (IsClient) {
+        Debug.Log($"NetRigidbody2D: HandleMessage(): CLIENT: flag={flag}, value={value}");
+        lastVelocity = Parser.ParseVector2(value);
+        Debug.Log($"NetRb2D: HandleMessage(): CLIENT: lastVelocity: {lastVelocity} = Parser(value): {Parser.ParseVector2(value)}");
 
-        if (IsClient) {
-          lastVelocity = Parser.ParseVector2(value);
+        float deltaVelocity = lastVelocity.magnitude;
 
-          float deltaVelocity = lastVelocity.magnitude;
-
-          if (deltaVelocity < minThreshold) {
-            lastVelocity = Vector2.zero;
-            adaptiveVelocity = Vector2.zero;
-          }
+        if (deltaVelocity < minThreshold) {
+          lastVelocity = Vector2.zero;
+          adaptiveVelocity = Vector2.zero;
         }
       }
     }
@@ -78,18 +69,19 @@ public class NetRigidbody2D : NetworkComponent {
 
       if (deltaPosition > minThreshold) {
         lastPosition = rb.position;
-        Debug.Log($"SERVER: deltaPosition: {deltaPosition} > minThreshold: {minThreshold}. Updating POSITION.");
+        //Debug.Log($"SERVER: deltaPosition: {deltaPosition} > minThreshold: {minThreshold}. Updating POSITION.");
         SendUpdate("POS", lastPosition.ToString("F2"));
       }
 
       if (deltaVelocity > minThreshold) {
         lastVelocity = rb.velocity;
-        Debug.Log($"SERVER: deltaVelocity: {deltaVelocity} > minThreshold: {minThreshold}. Updating VELOCITY.");
+        //Debug.Log($"SERVER: deltaVelocity: {deltaVelocity} > minThreshold: {minThreshold}. Updating VELOCITY.");
+        //Debug.Log($"SERVER: lastVelocity: {lastVelocity} > rb.velocity: {rb.velocity}");
         SendUpdate("VEL", lastVelocity.ToString("F2"));
       }
 
       if (IsDirty) {
-        Debug.Log($"SERVER: {name} NetRigidbody2D is dirty. Sending updates.");
+        //Debug.Log($"SERVER: {name} NetRigidbody2D is dirty. Sending updates.");
         SendUpdate("POS", lastPosition.ToString("F2"));
         SendUpdate("VEL", lastVelocity.ToString("F2"));
         IsDirty = false;
@@ -107,8 +99,7 @@ public class NetRigidbody2D : NetworkComponent {
 
   void Update() {
     if (IsClient) {
-      //rb.position = lastPosition;
-      Debug.Log($"CLIENT: rb.velocity: {rb.velocity} = lastVelocity: {lastVelocity}");
+      //Debug.Log($"CLIENT: rb.velocity: {rb.velocity} = lastVelocity: {lastVelocity}");
       rb.velocity = lastVelocity;
 
       if (rb.velocity.magnitude > minThreshold && usingAdaptiveSpeed) {

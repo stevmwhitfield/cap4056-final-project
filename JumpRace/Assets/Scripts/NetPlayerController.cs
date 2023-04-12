@@ -28,9 +28,16 @@ public class NetPlayerController : NetworkComponent {
   }
 
   public override void HandleMessage(string flag, string value) {
-    if (flag == "MOVE") {
+    //if (IsServer) {
+    //  Debug.Log($"SERVER: {name} NetPlayerController: {flag}, {value}");
+    //}
+    //else if (IsClient) {
+    //  Debug.Log($"CLIENT: {name} NetPlayerController: {flag}, {value}");
+    //}
+    
+
+    if (flag == "INPUT") {
       if (IsServer) {
-        Debug.Log($"{name} NetPlayerController: {flag}, {value}");
         lastInput = Parser.ParseVector2(value);
       }
     }
@@ -61,6 +68,7 @@ public class NetPlayerController : NetworkComponent {
 
       if (IsDirty) {
         SendUpdate("NAME", Name);
+        IsDirty = false;
       }
       yield return new WaitForSeconds(0.05f);
     }
@@ -82,10 +90,10 @@ public class NetPlayerController : NetworkComponent {
     if (IsLocalPlayer) {
       if (c.phase == InputActionPhase.Started || c.phase == InputActionPhase.Performed) {
         Vector2 input = c.ReadValue<Vector2>();
-        SendCommand("MOVE", input.ToString("F2"));
+        SendCommand("INPUT", input.ToString("F2"));
       }
       else if (c.phase == InputActionPhase.Canceled) {
-        SendCommand("MOVE", Vector2.zero.ToString());
+        SendCommand("INPUT", Vector2.zero.ToString());
       }
     }
   }

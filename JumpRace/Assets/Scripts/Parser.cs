@@ -6,6 +6,7 @@ public class Parser {
     string[] args = str.Trim('(').Trim(')').Split(',');
     result.x = float.Parse(args[0]);
     result.y = float.Parse(args[1]);
+    Debug.Log($"PARSER: x:{result.x}, y:{result.y}");
     return result;
   }
 
