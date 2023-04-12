@@ -9,8 +9,8 @@ public class NetPlayerController : NetworkComponent {
   public Rigidbody2D rb;
   public Vector2 lastInput;
   public float speed = 5.0f;
-  public bool canJump = true;
-  public bool lastJump;
+  //public bool canJump = true;
+  //public bool lastJump;
   #endregion
 
   #region PROPERTIES
@@ -30,15 +30,16 @@ public class NetPlayerController : NetworkComponent {
   public override void HandleMessage(string flag, string value) {
     if (flag == "MOVE") {
       if (IsServer) {
+        Debug.Log($"{name} NetPlayerController: {flag}, {value}");
         lastInput = Parser.ParseVector2(value);
       }
     }
 
-    if (flag == "JUMP") {
-      if (IsServer) {
-        lastJump = bool.Parse(value);
-      }
-    }
+    //if (flag == "JUMP") {
+    //  if (IsServer) {
+    //    lastJump = bool.Parse(value);
+    //  }
+    //}
 
     if (flag == "NAME") {
       if (IsClient) {
@@ -55,6 +56,9 @@ public class NetPlayerController : NetworkComponent {
       //  SendUpdate("CAN_JUMP", canJump.ToString());
       //  // jump logic
       //}
+      //Vector2 currentVerticalVelocity = new Vector2(0, rb.velocity.y);
+      rb.velocity = new Vector2(lastInput.x, 0) * speed;
+
       if (IsDirty) {
         SendUpdate("NAME", Name);
       }
@@ -67,11 +71,6 @@ public class NetPlayerController : NetworkComponent {
   void Start() { }
 
   void Update() {
-    if (IsServer) {
-      Vector2 currentVerticalVelocity = new Vector2(0, rb.velocity.y);
-      rb.velocity = new Vector2(lastInput.x, 0) * speed + currentVerticalVelocity;
-    }
-
     if (IsClient) {
       // animations
     }
@@ -91,14 +90,14 @@ public class NetPlayerController : NetworkComponent {
     }
   }
 
-  public void OnJump(InputAction.CallbackContext c) {
-    if (IsLocalPlayer) {
-      if (canJump) {
-        if (c.phase == InputActionPhase.Started) {
-          SendCommand("JUMP", true.ToString());
-        }
-      }
-    }
-  }
+  //public void OnJump(InputAction.CallbackContext c) {
+  //  if (IsLocalPlayer) {
+  //    if (canJump) {
+  //      if (c.phase == InputActionPhase.Started) {
+  //        SendCommand("JUMP", true.ToString());
+  //      }
+  //    }
+  //  }
+  //}
   #endregion
 }
