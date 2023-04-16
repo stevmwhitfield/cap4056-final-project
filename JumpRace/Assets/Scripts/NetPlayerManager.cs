@@ -90,13 +90,9 @@ public class NetPlayerManager : NetworkComponent {
   #endregion
 
   #region M_UNITY
-  void Start() {
+  void Start() { }
 
-  }
-
-  void Update() {
-
-  }
+  void Update() { }
   #endregion
 
   #region M_UI

@@ -4,17 +4,14 @@ using NETWORK_ENGINE;
 
 public class GameMaster : NetworkComponent {
   #region FIELDS
+  public float secondsPerGame = 5f;
   public bool isGameReady = false;
   public bool isGameRunning = false;
   public bool isGameOver = false;
   #endregion
 
   #region M_NETWORK_ENGINE
-  public override void NetworkedStart() {
-    //Canvas scoreCanvas = GameObject.FindGameObjectWithTag("ScoreHolder").transform.parent.GetComponent<Canvas>();
-    //Debug.Log("NetworkedStart(): ScoreCanvas: " + scoreCanvas.name);
-    //scoreCanvas.enabled = false;
-  }
+  public override void NetworkedStart() { }
 
   public override void HandleMessage(string flag, string value) {
     if (flag == "READY") {
@@ -40,6 +37,22 @@ public class GameMaster : NetworkComponent {
         }
       }
     }
+
+    if (flag == "RESET") {
+      isGameReady = false;
+      isGameRunning = false;
+      isGameOver = false;
+
+      if (IsClient) {
+        // Hide score screen
+        Canvas scoreCanvas = GameObject.FindGameObjectWithTag("ScoreHolder").transform.parent.GetComponent<Canvas>();
+        scoreCanvas.enabled = false;
+
+        // Display LAN screen
+        GameObject lanMenu = GameObject.FindGameObjectWithTag("NetworkManager").transform.GetChild(0).GetChild(0).gameObject;
+        lanMenu.SetActive(true);
+      }
+    }
   }
 
   public override IEnumerator SlowUpdate() {
@@ -52,22 +65,23 @@ public class GameMaster : NetworkComponent {
 
       // Spawn the level, players, etc.
       if (isGameReady) {
-        Debug.Log("SlowUpdate(): Game is preparing");
         PrepareGame();
       }
 
       // Start the game
-      Debug.Log("SlowUpdate(): Start game timer");
       StartCoroutine(GameTimer());
       isGameRunning = true;
       while (isGameRunning) {
-        Debug.Log("SlowUpdate(): Game is running");
+        GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
+        if (players.Length == 0) {
+          isGameRunning = false;
+          isGameOver = true;
+        }
         yield return new WaitForSeconds(0.1f);
       }
 
       // End the game
       if (isGameOver) {
-        Debug.Log("SlowUpdate(): Game is over");
         EndGame();
       }
     }
@@ -75,17 +89,14 @@ public class GameMaster : NetworkComponent {
   #endregion
 
   #region M_UNITY
-  void Start() {
+  void Start() { }
 
-  }
-
-  void Update() {
-
-  }
+  void Update() { }
   #endregion
 
+  #region M_HELPERS
   private IEnumerator GameTimer() {
-    yield return new WaitForSecondsRealtime(300f);
+    yield return new WaitForSecondsRealtime(secondsPerGame);
     isGameRunning = false;
     isGameOver = true;
   }
@@ -123,7 +134,7 @@ public class GameMaster : NetworkComponent {
       // Create players and set spawn position
       int playerType = 0;
       GameObject player = MyCore.NetCreateObject(playerType, npm.Owner, spawnPoints[i].transform.position);
-      player.GetComponent<NetPlayerController>().Name = npm.Name;
+      player.GetComponent<NetJumperController>().Name = npm.Name;
       i += 1;
     }
 
@@ -131,20 +142,32 @@ public class GameMaster : NetworkComponent {
   }
 
   private void EndGame() {
-    Debug.Log("EndGame(): Start EndGame()");
     // Destroy players
     GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
     foreach (GameObject player in players) {
       int playerNetId = player.GetComponent<NetworkID>().NetId;
-      Debug.Log("EndGame(): Player Net ID: " + playerNetId);
       MyCore.NetDestroyObject(playerNetId);
+    }
+
+    // Disconnect players - DOES NOT WORK
+    GameObject[] netPlayerManagers = GameObject.FindGameObjectsWithTag("NPM");
+    foreach (GameObject npm in netPlayerManagers) {
+      int npmNetId = npm.GetComponent<NetworkID>().NetId;
+      MyCore.NetDestroyObject(npmNetId);
+      MyCore.Disconnect(npmNetId);
     }
 
     // Destroy level
     GameObject level = GameObject.FindGameObjectWithTag("Level");
-    Debug.Log("EndGame(): Level: " + level.name);
     MyCore.NetDestroyObject(level.GetComponent<NetworkID>().NetId);
 
     SendUpdate("GAMEOVER", true.ToString());
+    StartCoroutine(ResetGame());
   }
+
+  private IEnumerator ResetGame() {
+    yield return new WaitForSeconds(5f);
+    SendUpdate("RESET", "1");
+  }
+  #endregion
 }

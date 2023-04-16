@@ -23,9 +23,7 @@ public class GameRoom
     public int Port;
     public int GameID;
     //Only on server
-#if !UNITY_WEBGL
     public System.Diagnostics.Process MyProcess;
-#endif
     public float ProcessTTL;
     public Coroutine KillTimer;
     public int ServerC;
@@ -41,7 +39,7 @@ public class GameRoom
     }
 }
 
-public class LobbyManager : GenericCore_Web
+public class LobbyManager : GenericNetworkCore
 {
     //You have to do this so you can connect to the correct one.
     public string PublicIP;
@@ -82,9 +80,8 @@ public class LobbyManager : GenericCore_Web
     /// If the command line arg involves a _Port this code will tell the NetCore to create a game server and connect as an Agent to the Lobby Manager
     /// Otherwise, this code will simply connect you as an agent to the Lobby manager.
     /// </summary>
-    new void Start()
+    void Start()
     {
-        base.Start();
         UsingUDP = false;
         MyCore = GameObject.FindObjectOfType<NetworkCore>();
         if (MyCore == null)
@@ -101,10 +98,10 @@ public class LobbyManager : GenericCore_Web
                     string[] temp = a.Split('_');
                     int port = int.Parse(temp[1]);
                     LocalGameID = int.Parse(temp[3]);
-                    Debug.Log("The number of Max connections is: " + MyCore.MaxConnections);
+                    GenericNetworkCore.Logger("The number of Max connections is: " + MyCore.MaxConnections);
                     MyCore.PortNumber = port;
                     IP = "127.0.0.1";
-                    StartCoroutine(StartClient());
+                    StartCoroutine(ClientStart());
 
                     //StartCoroutine(SlowAgentStart());
                     //MyCore.IP = this.IP;
@@ -114,12 +111,12 @@ public class LobbyManager : GenericCore_Web
             }
             catch (System.Exception e)
             {
-                Debug.Log("Exception caught starting the server: " + e.ToString());
+                GenericNetworkCore.Logger("Exception caught starting the server: " + e.ToString());
             }
 
             if (a.Contains("MASTER"))
             {
-               StartServer();
+                StartCoroutine(ServerStart());
             }
         }
         if (!IsConnected)
@@ -145,9 +142,9 @@ public class LobbyManager : GenericCore_Web
     {
         bool UsePublic = false;
         bool UseFlorida = false;
-#if !UNITY_WEBGL
+
         //Ping Public Ip address to see if we are external..........
-        Debug.Log("Trying Public IP Address: " + PublicIP.ToString());
+        GenericNetworkCore.Logger("Trying Public IP Address: " + PublicIP.ToString());
         System.Net.NetworkInformation.Ping ping = new System.Net.NetworkInformation.Ping();
         System.Net.NetworkInformation.PingOptions po = new System.Net.NetworkInformation.PingOptions();
         po.DontFragment = true;
@@ -159,31 +156,31 @@ public class LobbyManager : GenericCore_Web
         Logger("Ping Return: " + pr.Status.ToString());
         if(pr.Status == System.Net.NetworkInformation.IPStatus.Success)
         {
-            Debug.Log("The public IP responded with a roundtrip time of: " + pr.RoundtripTime);
+            GenericNetworkCore.Logger("The public IP responded with a roundtrip time of: " + pr.RoundtripTime);
             UsePublic = true;
             IP = PublicIP;
         }
         else
         {
-            Debug.Log("The public IP failed to respond");
+            GenericNetworkCore.Logger("The public IP failed to respond");
             UsePublic = false;
         }
         //-------------------If not public, ping Florida Poly for internal access.
         if(!UsePublic)
         {
-            Debug.Log("Trying Florida Poly Address: " + FloridaPolyIP.ToString());
+            GenericNetworkCore.Logger("Trying Florida Poly Address: " + FloridaPolyIP.ToString());
             pr = ping.Send(FloridaPolyIP, timeout, buffer, po);
             yield return new WaitForSeconds(1.5f);
             Logger("Ping Return: " + pr.Status.ToString());
             if (pr.Status.ToString() == "Success")
             {
-                Debug.Log("The Florida Poly IP responded with a roundtrip time of: " + pr.RoundtripTime);
+                GenericNetworkCore.Logger("The Florida Poly IP responded with a roundtrip time of: " + pr.RoundtripTime);
                 UseFlorida = true;
                 IP = FloridaPolyIP;
             }
             else
             {
-                Debug.Log("The Florida Poly IP failed to respond");
+                GenericNetworkCore.Logger("The Florida Poly IP failed to respond");
                 UseFlorida = false;
             }
         }
@@ -191,13 +188,9 @@ public class LobbyManager : GenericCore_Web
         if(!UsePublic && !UseFlorida)
         {
             IP = "127.0.0.1";
-            Debug.Log("Using Home Address!");
+            GenericNetworkCore.Logger("Using Home Address!");
         }
-#elif UNITY_WEBGL
-        IP = PublicIP;
-        yield return new WaitForSeconds(.1f);
-#endif
-        StartCoroutine(StartClient()); ;
+        StartCoroutine(ClientStart()); ;
     }
 
     /// <summary>
@@ -256,7 +249,7 @@ public class LobbyManager : GenericCore_Web
         }
         catch (System.Exception e)
         {
-            Debug.Log("Lobby Manager Caugh this error: " + e.ToString()+"\n "+responce);
+            GenericNetworkCore.Logger("Lobby Manager Caugh this error: " + e.ToString()+"\n "+responce);
         }
 
     }
@@ -290,7 +283,7 @@ public class LobbyManager : GenericCore_Web
             }
             if (IsMaster)
             {
-                foreach (KeyValuePair<int, GenCore> con in Connections)
+                foreach (KeyValuePair<int, Connector2> con in Connections)
                 {
                     Send(g, con.Key);
                 }
@@ -316,7 +309,7 @@ public class LobbyManager : GenericCore_Web
                 Destroy(GameRoomButtons[gameID].gameObject);
                 GameRoomButtons.Remove(gameID);
             }
-            foreach(KeyValuePair<int,GenCore> x in Connections)
+            foreach(KeyValuePair<int,Connector2> x in Connections)
             {
                 Send(g, x.Key);
             }
@@ -345,7 +338,7 @@ public class LobbyManager : GenericCore_Web
     {
        if(IsMaster)
         {
-            Debug.Log("Master received join: " + g);
+            GenericNetworkCore.Logger("Master received join: " + g);
             int gID = int.Parse(g.Split('#')[1]);
             int agentId = int.Parse(g.Split('#')[2]);
             if(Lobbies.ContainsKey(gID))
@@ -355,7 +348,7 @@ public class LobbyManager : GenericCore_Web
         }
         if(IsAgent)
         {
-            Debug.Log("Joining game ID " + g.Split('#')[1].Trim());
+            GenericNetworkCore.Logger("Joining game ID " + g.Split('#')[1].Trim());
             MyCore.PortNumber = int.Parse(g.Split('#')[1].Trim());
             MyCore.UI_StartClient();
             if (MyCore.IsConnected && MyCore.IsClient)
@@ -396,7 +389,7 @@ public class LobbyManager : GenericCore_Web
     public void CreateNewGame(string g)
     {
 
-        Debug.Log("Creating room: " + g);
+        GenericNetworkCore.Logger("Creating room: " + g);
         //create new room instance....
         GameRoom temp = new GameRoom();
         temp.GameID = -1;
@@ -410,18 +403,17 @@ public class LobbyManager : GenericCore_Web
                 break;
             }
         }
-#if !UNITY_WEBGL
         try
         {
             System.Diagnostics.Process proc = new System.Diagnostics.Process();
             proc.StartInfo.UseShellExecute = true;
             string[] args = System.Environment.GetCommandLineArgs();
-            Debug.Log("Starting new process " + args[0]);
+            GenericNetworkCore.Logger("Starting new process " + args[0]);
             proc.StartInfo.FileName = args[0];
             proc.StartInfo.Arguments = "PORT_" + temp.Port + "_GAMEID_" + temp.GameID +" -batchmode -nographics >GameServer"+temp.GameID+"Log.txt";               
             temp.MyProcess = proc;
             temp.ProcessTTL = MaxGameTime;
-            Debug.Log("PORT_" + temp.Port + "_GAMEID_" + temp.GameID + "\nTTL " + temp.ProcessTTL);
+            GenericNetworkCore.Logger("PORT_" + temp.Port + "_GAMEID_" + temp.GameID + "\nTTL " + temp.ProcessTTL);
             proc.Start();
             temp.Creator = int.Parse(g.Split('#')[2]);
             temp.GameName = g.Split('#')[1];
@@ -435,9 +427,8 @@ public class LobbyManager : GenericCore_Web
         }
         catch (System.Exception e)
         {
-            Debug.Log("EXCEPTION - in creating a game!!! - " + e.ToString());
-        }  
-#endif
+            GenericNetworkCore.Logger("EXCEPTION - in creating a game!!! - " + e.ToString());
+        }   
     }
     /// <summary>
     /// This is a coroutine that will kill any room that is given a non -1 time to live (ttl)
@@ -452,20 +443,18 @@ public class LobbyManager : GenericCore_Web
         {
             yield return new WaitForSecondsRealtime(t);
 
-            Disconnect(g.ServerC);
+            yield return StartCoroutine(Disconnect(g.ServerC));
             Logger("Waiting for Game Server to Disconnect!");
             yield return new WaitForSeconds(5);
-            foreach(KeyValuePair<int,GenCore> c in Connections)
+            foreach(KeyValuePair<int,Connector2> c in Connections)
             {
-                Send("GAMESTART#" + LocalGameID.ToString() + "\n", c.Value.ConnectionID);
+                Send("GAMESTART#" + LocalGameID.ToString() + "\n", c.Value.connectionID);
             }
-            Debug.Log(" -Trying to destroy the process!");    
+            GenericNetworkCore.Logger(" -Trying to destroy the process!");    
             try
             {
-#if !UNITY_WEBGL
                 g.MyProcess.Kill(); 
-#endif
-                Debug.Log(" - Removing game from dictionary\n");    
+                GenericNetworkCore.Logger(" - Removing game from dictionary\n");    
             }
             catch
             {
@@ -488,7 +477,7 @@ public class LobbyManager : GenericCore_Web
     /// <param name="g">String form of the command.</param>
     public void RegisterGame(string g)
     {
-        Debug.Log("We recieved ISServer: " + g);
+        GenericNetworkCore.Logger("We recieved ISServer: " + g);
         int GameID = int.Parse(g.Split('#')[1]);
         int ServerId = int.Parse(g.Split('#')[2]);
         if (IsMaster)
@@ -498,7 +487,7 @@ public class LobbyManager : GenericCore_Web
                 Lobbies[GameID].ServerC = ServerId;
                 Send("JOIN#" + Lobbies[GameID].Port + "\n", Lobbies[GameID].Creator);
             }
-            foreach (KeyValuePair<int, GenCore> con in Connections)
+            foreach (KeyValuePair<int, Connector2> con in Connections)
             {
                 Send("NEWGAME#" + GameID + "#" + Lobbies[GameID].GameName + "\n", con.Key);
             }
@@ -586,37 +575,30 @@ public class LobbyManager : GenericCore_Web
     {    
         if (IsMaster)
         {
-            try
+            int badGameID = -1;
+            foreach(KeyValuePair<int,GameRoom> x in Lobbies)
             {
-                int badGameID = -1;
-                foreach (KeyValuePair<int, GameRoom> x in Lobbies)
+                if(x.Value.ServerC == id)
                 {
-                    if (x.Value.ServerC == id)
-                    {
-                        badGameID = x.Key;
-                        break;
-                    }
-                }
-                if (badGameID != -1)
-                {
-                    Debug.Log("Found game id that is being removed - " + badGameID);
-                    //Just in case the menu hasn't been cleared out.
-                    foreach (KeyValuePair<int, GenCore> x in Connections)
-                    {
-                        if (x.Key != id)
-                        {
-                            Send("GAMESTART#" + badGameID.ToString() + "\n", x.Key);
-                        }
-                    }
-                    if (Lobbies.ContainsKey(badGameID))
-                    {
-                        Lobbies.Remove(badGameID);
-                    }
+                    badGameID = x.Key;
+                    break;
                 }
             }
-            catch (System.Exception e)
+            if (badGameID != -1)
             {
-                Debug.Log("Warning: Lobby manager already closed! "+e.ToString());
+                GenericNetworkCore.Logger("Found game id that is being removed - " + badGameID);
+                //Just in case the menu hasn't been cleared out.
+                foreach (KeyValuePair<int, Connector2> x in Connections)
+                {
+                    if (x.Key != id)
+                    {
+                        Send("GAMESTART#" + badGameID.ToString() + "\n", x.Key);
+                    }
+                }
+                if (Lobbies.ContainsKey(badGameID))
+                {
+                    Lobbies.Remove(badGameID);
+                }
             }
         }
         if (IsGameServer)
@@ -695,9 +677,15 @@ public class LobbyManager : GenericCore_Web
         if (!IsMaster && IsConnected && LocalConnectionID > -1)
         {
             Logger("Sending start game!");
-            Send("CREATEROOM#" + MyGameName + "#" + LocalConnectionID + "\n", 0);
-            this.transform.GetChild(0).GetChild(0).GetChild(1).gameObject.SetActive(true);
-            this.transform.GetChild(0).GetChild(0).GetChild(0).gameObject.SetActive(false);
+            if(!Send("CREATEROOM#" + MyGameName +"#"+ LocalConnectionID + "\n", 0))
+            {
+                Logger("ERROR: Could not send message to server!");
+            }
+            else
+            {
+                this.transform.GetChild(0).GetChild(0).GetChild(1).gameObject.SetActive(true);
+                this.transform.GetChild(0).GetChild(0).GetChild(0).gameObject.SetActive(false);
+            }
         }
         //StartCoroutine(JoinGame());
     }

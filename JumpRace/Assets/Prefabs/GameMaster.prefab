@@ -67,4 +67,7 @@ MonoBehaviour:
   MyCore: {fileID: 0}
   MyId: {fileID: 0}
   IsDirty: 0
+  secondsPerGame: 5
   isGameReady: 0
+  isGameRunning: 0
+  isGameOver: 0

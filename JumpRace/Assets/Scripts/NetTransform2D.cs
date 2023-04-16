@@ -3,11 +3,13 @@ using UnityEngine;
 using NETWORK_ENGINE;
 
 public class NetTransform2D : NetworkComponent {
-  
+
+  #region FIELDS
   private Vector3 lastPosition;
   private Vector3 lastRotation;
   private float minThreshold = 0.1f;
-  private float maxThreshold = 5.0f;
+  private float maxThreshold = 5.0f; 
+  #endregion
 
   #region M_NETWORK_ENGINE
   public override void NetworkedStart() {

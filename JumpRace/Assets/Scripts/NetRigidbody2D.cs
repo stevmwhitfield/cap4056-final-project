@@ -2,110 +2,101 @@ using System.Collections;
 using UnityEngine;
 using NETWORK_ENGINE;
 
+[RequireComponent(typeof(Rigidbody2D))]
 public class NetRigidbody2D : NetworkComponent {
   #region FIELDS
+
+  [SerializeField]
+  private Rigidbody2D rb;
+
   public Vector2 lastPosition;
   public Vector2 lastVelocity;
-
   public Vector2 adaptiveVelocity;
-  public float speed = 5.0f;
-  public bool usingAdaptiveSpeed = true;
+  private float minThreshold = 0.1f;
+  private float maxThreshold = 1f;
+  private bool usingAdaptiveVelocity = false;
 
-  public float minThreshold = 0.1f;
-  public float maxThreshold = 3.0f;
-
-  [SerializeField] private Rigidbody2D rb;
   #endregion
 
-  #region M_NETWORK_ENGINE
+  #region UNITY
+
+  void Start() {
+    rb = GetComponent<Rigidbody2D>();
+  }
+
+  void Update() {
+    if (IsClient) {
+      if (lastVelocity.magnitude < 0.05f) {
+        adaptiveVelocity = Vector2.zero;
+      }
+
+      if (usingAdaptiveVelocity) {
+        rb.velocity = lastVelocity + adaptiveVelocity;
+      }
+      else {
+        rb.velocity = lastVelocity;
+      }
+    }
+  }
+
+  #endregion
+
+  #region NETWORK_ENGINE
+
   public override void NetworkedStart() { }
 
   public override void HandleMessage(string flag, string value) {
-    if (IsServer) {
-      Debug.Log($"SERVER: {name} NetRigidbody2D: {flag}, {value}");
-    }
-    else if (IsClient) {
-      Debug.Log($"CLIENT: {name} NetRigidbody2D: {flag}, {value}");
-    }
-
-
     if (flag == "POS") {
       if (IsClient) {
         lastPosition = Parser.ParseVector2(value);
 
-        float deltaPosition = (lastPosition - rb.position).magnitude;
+        float deltaPosition = (rb.position - lastPosition).magnitude;
 
-        if (deltaPosition > maxThreshold) {
+        if (deltaPosition > maxThreshold || lastVelocity.magnitude < 0.1f || !usingAdaptiveVelocity) {
           rb.position = lastPosition;
           adaptiveVelocity = Vector2.zero;
         }
-        else if (deltaPosition > minThreshold && usingAdaptiveSpeed) {
-          adaptiveVelocity = (lastPosition - rb.position).normalized * speed * Time.deltaTime;
+        else {
+          adaptiveVelocity = lastPosition - rb.position;
         }
       }
     }
 
     if (flag == "VEL") {
-      Debug.Log($"NetRigidbody2D: HandleMessage(): flag={flag}, value={value}");
       if (IsClient) {
-        Debug.Log($"NetRigidbody2D: HandleMessage(): CLIENT: flag={flag}, value={value}");
         lastVelocity = Parser.ParseVector2(value);
-        Debug.Log($"NetRb2D: HandleMessage(): CLIENT: lastVelocity: {lastVelocity} = Parser(value): {Parser.ParseVector2(value)}");
-
-        float deltaVelocity = lastVelocity.magnitude;
-
-        if (deltaVelocity < minThreshold) {
-          lastVelocity = Vector2.zero;
-          adaptiveVelocity = Vector2.zero;
-        }
       }
     }
   }
 
   public override IEnumerator SlowUpdate() {
+    if (IsClient) {
+      rb.gravityScale = 0f;
+    }
+
     while (IsServer) {
       float deltaPosition = (lastPosition - rb.position).magnitude;
       float deltaVelocity = (lastVelocity - rb.velocity).magnitude;
 
       if (deltaPosition > minThreshold) {
         lastPosition = rb.position;
-        //Debug.Log($"SERVER: deltaPosition: {deltaPosition} > minThreshold: {minThreshold}. Updating POSITION.");
         SendUpdate("POS", lastPosition.ToString("F2"));
       }
 
       if (deltaVelocity > minThreshold) {
         lastVelocity = rb.velocity;
-        //Debug.Log($"SERVER: deltaVelocity: {deltaVelocity} > minThreshold: {minThreshold}. Updating VELOCITY.");
-        //Debug.Log($"SERVER: lastVelocity: {lastVelocity} > rb.velocity: {rb.velocity}");
         SendUpdate("VEL", lastVelocity.ToString("F2"));
       }
 
       if (IsDirty) {
-        //Debug.Log($"SERVER: {name} NetRigidbody2D is dirty. Sending updates.");
         SendUpdate("POS", lastPosition.ToString("F2"));
         SendUpdate("VEL", lastVelocity.ToString("F2"));
         IsDirty = false;
       }
-      yield return new WaitForSeconds(0.05f);
+
+      yield return new WaitForSeconds(0.01f);
     }
   }
-  #endregion
 
-  #region M_UNITY
-  void Start() {
-    rb = GetComponent<Rigidbody2D>();
-    usingAdaptiveSpeed = true;
-  }
-
-  void Update() {
-    if (IsClient) {
-      //Debug.Log($"CLIENT: rb.velocity: {rb.velocity} = lastVelocity: {lastVelocity}");
-      rb.velocity = lastVelocity;
-
-      if (rb.velocity.magnitude > minThreshold && usingAdaptiveSpeed) {
-        rb.velocity += adaptiveVelocity;
-      }
-    }
-  }
   #endregion
 }

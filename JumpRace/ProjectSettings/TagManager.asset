@@ -9,6 +9,9 @@ TagManager:
   - ScoreHolder
   - Level
   - SpawnPoint
+  - LANMenu
+  - NetworkManager
+  - NPM
   layers:
   - Default
   - TransparentFX
@@ -17,7 +20,7 @@ TagManager:
   - Water
   - UI
   - Players
-  - 
+  - Walkable
   - 
   - 
   - 

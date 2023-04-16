@@ -2561,7 +2561,7 @@ GameObject:
   - component: {fileID: 1616475591}
   m_Layer: 5
   m_Name: LanNetworkManager
-  m_TagString: Untagged
+  m_TagString: NetworkManager
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -2578,28 +2578,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: faa3c0b1ce93b53448f5d6edda383bee, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  OutputConsole: {fileID: 0}
-  MaxConsoleLogSize: 1024
   UsingUDP: 0
-  IsListening: 0
-  IsServer: 0
-  IsClient: 0
-  IsConnected: 0
-  AppNumber: 0
-  conCounter: 0
-  IP: 127.0.0.1
-  PortNumber: 9000
-  MaxConnections: 0
-  MasterTimer: 0.05
+  MasterTimer: 0.01
   LocalConnectionID: -1
   UseMenuManager: 1
   DisconnectScreen: {fileID: 0}
   ObjectCounter: 0
   SpawnPrefab:
-  - {fileID: 3612924286702084652, guid: 127840d030f7b5c4dba54102a75055f9, type: 3}
-  - {fileID: 2703033693738931333, guid: 67a54d70845bdd544833cbf2473907c9, type: 3}
+  - {fileID: 7985172890883320520, guid: 127840d030f7b5c4dba54102a75055f9, type: 3}
+  - {fileID: 253427022759332936, guid: 67a54d70845bdd544833cbf2473907c9, type: 3}
   - {fileID: 2965974904153992481, guid: 270347ab16cb9274e88cc57a56380c20, type: 3}
-  NetworkPlayerManager: {fileID: 5940483115296600160, guid: d5dee7748e968e94e988f8a9e9fb907f, type: 3}
+  NetworkPlayerManager: {fileID: 5948504997272857495, guid: d5dee7748e968e94e988f8a9e9fb907f, type: 3}
   DefaultReturnScene: 0
 --- !u!4 &1616475592
 Transform:

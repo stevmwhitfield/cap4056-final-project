@@ -4,13 +4,9 @@ using NETWORK_ENGINE;
 
 public class NetEnemyController : NetworkComponent {
   #region M_NETWORK_ENGINE
-  public override void NetworkedStart() {
+  public override void NetworkedStart() { }
 
-  }
-
-  public override void HandleMessage(string flag, string value) {
-
-  }
+  public override void HandleMessage(string flag, string value) { }
 
   public override IEnumerator SlowUpdate() {
     yield return new WaitForSeconds(0.1f);
@@ -18,12 +14,8 @@ public class NetEnemyController : NetworkComponent {
   #endregion
 
   #region M_UNITY
-  void Start() {
+  void Start() { }
 
-  }
-
-  void Update() {
-
-  }
+  void Update() { }
   #endregion
 }
