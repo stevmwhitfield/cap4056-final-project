@@ -2493,7 +2493,7 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 1
-  m_BackGroundColor: {r: 0.21586867, g: 0.26359472, b: 0.31132078, a: 0}
+  m_BackGroundColor: {r: 0.23425227, g: 0.255, b: 0.16371, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -2585,9 +2585,13 @@ MonoBehaviour:
   DisconnectScreen: {fileID: 0}
   ObjectCounter: 0
   SpawnPrefab:
-  - {fileID: 7985172890883320520, guid: 127840d030f7b5c4dba54102a75055f9, type: 3}
-  - {fileID: 253427022759332936, guid: 67a54d70845bdd544833cbf2473907c9, type: 3}
   - {fileID: 2965974904153992481, guid: 270347ab16cb9274e88cc57a56380c20, type: 3}
+  - {fileID: 5905251635051186028, guid: 127840d030f7b5c4dba54102a75055f9, type: 3}
+  - {fileID: 1345834175907713941, guid: 02a4628b8e9fa0042b794d581a7ebc4d, type: 3}
+  - {fileID: 6697479769701084191, guid: dee1c52ffff36cf42a5de47144178bb3, type: 3}
+  - {fileID: 7982378916847876802, guid: 74c43c4151b29bd4c997a842255318f3, type: 3}
+  - {fileID: 801750666125754595, guid: 67a54d70845bdd544833cbf2473907c9, type: 3}
+  - {fileID: 6900687873634467881, guid: 9e867efd90a42a14190c7e1adec7b703, type: 3}
   NetworkPlayerManager: {fileID: 5948504997272857495, guid: d5dee7748e968e94e988f8a9e9fb907f, type: 3}
   DefaultReturnScene: 0
 --- !u!4 &1616475592

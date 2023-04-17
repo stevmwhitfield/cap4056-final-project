@@ -12,6 +12,11 @@ TagManager:
   - LANMenu
   - NetworkManager
   - NPM
+  - Goal
+  - Enemy
+  - RunnerSpawner
+  - FlyerSpawner
+  - GunnerSpawner
   layers:
   - Default
   - TransparentFX

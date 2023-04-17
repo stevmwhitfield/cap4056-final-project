@@ -1,22 +1,29 @@
 using System.Collections;
 using UnityEngine;
-using NETWORK_ENGINE;
 using UnityEngine.UI;
 using TMPro;
+using NETWORK_ENGINE;
 
 public class NetPlayerManager : NetworkComponent {
   #region FIELDS
-  public string Name { get; set; } = "";
-  public bool IsReady { get; set; } = false;
 
   public TMP_InputField NameInput;
   public Button IsReadyButton;
   public TMP_Text NameText;
   public TMP_Text IsReadyText;
   public Image PlaceholderSprite;
+
   #endregion
 
-  #region M_NETWORK_ENGINE
+  #region PROPERTIES
+
+  public string Name { get; set; } = "";
+  public bool IsReady { get; set; } = false;
+  public bool HasReachedGoal { get; set; } = false;
+
+  #endregion
+
+  #region NETWORK_ENGINE
   public override void NetworkedStart() {
     if (!IsLocalPlayer) {
       NameInput.gameObject.SetActive(false);
@@ -89,7 +96,7 @@ public class NetPlayerManager : NetworkComponent {
   }
   #endregion
 
-  #region M_UNITY
+  #region UNITY
   void Start() { }
 
   void Update() { }

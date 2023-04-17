@@ -57,7 +57,7 @@ public class NetJumperController : NetworkComponent {
     }
 
     if (IsLocalPlayer) {
-      Vector3 offset = new Vector3(0, 2, -10);
+      Vector3 offset = new Vector3(0, 1, -10);
       Camera.main.transform.position = transform.position + offset;
     }
   }
@@ -87,7 +87,7 @@ public class NetJumperController : NetworkComponent {
       }
 
       Camera.main.orthographic = true;
-      Camera.main.orthographicSize = 4.5f;
+      Camera.main.orthographicSize = 11.25f;
     }
   }
 
