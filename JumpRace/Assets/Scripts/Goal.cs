@@ -24,12 +24,12 @@ public class Goal : NetworkComponent {
 
   #endregion
 
-  private void OnTriggerEnter(Collider other) {
-    Debug.Log(other.gameObject);
-    if (other.gameObject.tag == "Player") {
+  private void OnTriggerEnter2D(Collider2D collision) {
+    Debug.Log(collision.gameObject);
+    if (collision.gameObject.tag == "Player") {
       if (IsServer) {
         Debug.Log("Player entered goal box");
-        int playerNetId = other.gameObject.GetComponent<NetworkID>().NetId;
+        int playerNetId = collision.gameObject.GetComponent<NetworkID>().NetId;
         MyCore.NetDestroyObject(playerNetId);
 
         // add player name to ranking list

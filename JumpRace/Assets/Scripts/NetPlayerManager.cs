@@ -18,7 +18,10 @@ public class NetPlayerManager : NetworkComponent {
   #region PROPERTIES
 
   public string Name { get; set; } = "";
-  public bool IsReady { get; set; } = false;
+  public float TimeToGoal { get; set; } = 0f;
+  public int Score => (int)TimeToGoal + CoinsCollected * 100;
+  public int CoinsCollected { get; set; } = 0;
+  public bool IsReady { get; private set; } = false;
   public bool HasReachedGoal { get; set; } = false;
 
   #endregion

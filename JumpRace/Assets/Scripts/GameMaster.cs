@@ -12,6 +12,7 @@ public class GameMaster : NetworkComponent {
 
   private readonly Dictionary<string, int> prefabTypes = new Dictionary<string, int>();
   private float secondsPerGame = 300f;
+  private int minimumPlayers = 1;
 
   #endregion
 
@@ -23,6 +24,7 @@ public class GameMaster : NetworkComponent {
     prefabTypes.Add("EnemyFlyer", 3);
     prefabTypes.Add("EnemyGunner", 4);
     prefabTypes.Add("Level_1", 5);
+    prefabTypes.Add("Coin", 7);
   }
 
   void Update() { }
@@ -79,7 +81,7 @@ public class GameMaster : NetworkComponent {
     if (IsServer) {
       // Determine if all players are ready to start
       while (!isGameReady) {
-        CheckArePlayersReady();
+        isGameReady = ArePlayersReady();
         yield return new WaitForSeconds(1.0f);
       }
 
@@ -117,18 +119,20 @@ public class GameMaster : NetworkComponent {
     isGameOver = true;
   }
 
-  private void CheckArePlayersReady() {
-    if (MyCore.Connections.Count > 1) {
-      isGameReady = true;
+  private bool ArePlayersReady() {
+    bool isReady = false;
+    if (MyCore.Connections.Count >= minimumPlayers) {
+      isReady = true;
 
       NetPlayerManager[] netPlayerManagers = GameObject.FindObjectsOfType<NetPlayerManager>();
       foreach (NetPlayerManager npm in netPlayerManagers) {
         if (!npm.IsReady) {
-          isGameReady = false;
+          isReady = false;
           break;
         }
       }
     }
+    return isReady;
   }
 
   private void PrepareGame() {
@@ -146,13 +150,14 @@ public class GameMaster : NetworkComponent {
     GameObject[] flyerSpawners = GameObject.FindGameObjectsWithTag("FlyerSpawner");
     GameObject[] gunnerSpawners = GameObject.FindGameObjectsWithTag("GunnerSpawner");
 
-    SpawnEnemies(runnerSpawners, prefabTypes["EnemyRunner"]);
-    SpawnEnemies(flyerSpawners, prefabTypes["EnemyFlyer"]);
-    SpawnEnemies(gunnerSpawners, prefabTypes["EnemyGunner"]);
+    SpawnPrefab(runnerSpawners, prefabTypes["EnemyRunner"]);
+    SpawnPrefab(flyerSpawners, prefabTypes["EnemyFlyer"]);
+    SpawnPrefab(gunnerSpawners, prefabTypes["EnemyGunner"]);
 
     // Spawn items
+    GameObject[] coinSpawners = GameObject.FindGameObjectsWithTag("CoinSpawner");
 
-
+    SpawnPrefab(coinSpawners, prefabTypes["Coin"]);
 
     // Spawn players
     SpawnPlayers();
@@ -191,10 +196,10 @@ public class GameMaster : NetworkComponent {
 
   #endregion
 
-  private void SpawnEnemies(GameObject[] spawners, int prefabType) {
+  private void SpawnPrefab(GameObject[] spawners, int prefabType) {
     int i = 0;
     foreach (GameObject spawner in spawners) {
-      GameObject enemy = MyCore.NetCreateObject(prefabType, Owner, spawners[0].transform.position);
+      GameObject obj = MyCore.NetCreateObject(prefabType, Owner, spawners[i].transform.position);
       i += 1;
     }
   }
