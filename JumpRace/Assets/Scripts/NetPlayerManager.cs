@@ -18,10 +18,10 @@ public class NetPlayerManager : NetworkComponent {
   #region PROPERTIES
 
   public string Name { get; set; } = "";
-  public float TimeToGoal { get; set; } = 0f;
-  public int Score => (int)TimeToGoal + CoinsCollected * 100;
+  public int TimeToGoal { get; set; } = 300;
+  public int Score => TimeToGoal + CoinsCollected * 20;
   public int CoinsCollected { get; set; } = 0;
-  public bool IsReady { get; private set; } = false;
+  public bool IsReady { get; set; } = false;
   public bool HasReachedGoal { get; set; } = false;
 
   #endregion
@@ -35,7 +35,7 @@ public class NetPlayerManager : NetworkComponent {
 
     try {
       Transform playerHolderTransform = GameObject.FindGameObjectWithTag("PlayerHolder").transform;
-      transform.SetParent(playerHolderTransform);
+      transform.SetParent(playerHolderTransform, false);
     }
     catch {
       Debug.Log("ERROR: Object with tag \"PlayerHolder\" not found!");
@@ -120,4 +120,12 @@ public class NetPlayerManager : NetworkComponent {
     }
   }
   #endregion
+
+  public IEnumerator DecreaseTimeToGoal() {
+    while (TimeToGoal > 0 && !HasReachedGoal) {
+      yield return new WaitForSecondsRealtime(1f);
+      TimeToGoal -= 1;
+      Debug.Log($"{Name}: {Score}");
+    }
+  }
 }

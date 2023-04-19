@@ -18,6 +18,8 @@ TagManager:
   - FlyerSpawner
   - GunnerSpawner
   - CoinSpawner
+  - PlayerScore
+  - Item
   layers:
   - Default
   - TransparentFX

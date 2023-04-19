@@ -3,15 +3,6 @@ using UnityEngine;
 using NETWORK_ENGINE;
 
 public class Goal : NetworkComponent {
-
-  #region UNITY
-
-  void Start() { }
-
-  void Update() { }
-
-  #endregion
-
   #region NETWORK_ENGINE
 
   public override void NetworkedStart() { }
@@ -25,17 +16,24 @@ public class Goal : NetworkComponent {
   #endregion
 
   private void OnTriggerEnter2D(Collider2D collision) {
-    Debug.Log(collision.gameObject);
     if (collision.gameObject.tag == "Player") {
       if (IsServer) {
-        Debug.Log("Player entered goal box");
-        int playerNetId = collision.gameObject.GetComponent<NetworkID>().NetId;
+        GameObject player = collision.gameObject;
+        int playerNetId = player.GetComponent<NetworkID>().NetId;
+        int playerOwner = player.GetComponent<NetworkID>().Owner;
+
         MyCore.NetDestroyObject(playerNetId);
 
-        // add player name to ranking list
+        NetPlayerManager[] netPlayerManagers = GameObject.FindObjectsOfType<NetPlayerManager>();
+        foreach (NetPlayerManager npm in netPlayerManagers) {
+          if (npm.Owner == playerOwner) {
+            npm.HasReachedGoal = true;
+          }
+        }
       }
+
       if (IsClient) {
-        // play sfx and vfx
+        // play sfx/vfx
       }
     }
   }

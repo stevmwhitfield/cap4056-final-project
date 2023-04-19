@@ -21,6 +21,9 @@ public class NetJumperController : NetworkComponent {
   [SerializeField]
   private ContactFilter2D contactFilter;
 
+  [SerializeField]
+  private Animator animator;
+
   private float moveSpeed;    // horizontal movement speed
   private float jumpSpeed;    // variable jump speed
   private float minJumpSpeed; // minimum jump speed, used if jumpSpeed is too low
@@ -45,6 +48,11 @@ public class NetJumperController : NetworkComponent {
       throw new System.Exception($"ERROR: {name} is missing a Rigidbody2D component!");
     }
 
+    animator = GetComponent<Animator>();
+    if (animator == null) {
+      throw new System.Exception($"ERROR: {name} is missing an Animator component!");
+    }
+
     moveSpeed = 5f;
     jumpSpeed = 0f;
     minJumpSpeed = 12f;
@@ -53,7 +61,11 @@ public class NetJumperController : NetworkComponent {
 
   void Update() {
     if (IsClient) {
-      // animations
+      animator.SetFloat("xVelocity", rb.velocity.x);
+      animator.SetFloat("yVelocity", rb.velocity.y);
+      animator.SetFloat("jumpCharge", jumpSpeed);
+      animator.SetInteger("xDirection", input.Direction);
+      animator.SetBool("isGrounded", IsGrounded);
     }
 
     if (IsLocalPlayer) {

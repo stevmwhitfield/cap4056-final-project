@@ -1,7 +1,8 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using NETWORK_ENGINE;
-using System.Collections.Generic;
+using TMPro;
 
 public class GameMaster : NetworkComponent {
   #region FIELDS
@@ -11,6 +12,7 @@ public class GameMaster : NetworkComponent {
   public bool isGameOver = false;
 
   private readonly Dictionary<string, int> prefabTypes = new Dictionary<string, int>();
+  private Dictionary<string, int> playerScores = new Dictionary<string, int>();
   private float secondsPerGame = 300f;
   private int minimumPlayers = 1;
 
@@ -25,6 +27,7 @@ public class GameMaster : NetworkComponent {
     prefabTypes.Add("EnemyGunner", 4);
     prefabTypes.Add("Level_1", 5);
     prefabTypes.Add("Coin", 7);
+    prefabTypes.Add("Score", 8);
   }
 
   void Update() { }
@@ -50,6 +53,13 @@ public class GameMaster : NetworkComponent {
 
     if (flag == "GAMEOVER") {
       isGameOver = bool.Parse(value);
+
+      if (IsServer) {
+        if (isGameOver) {
+          Debug.Log("Game over");
+          //CalculatePlayerScores();
+        }
+      }
 
       if (IsClient) {
         if (isGameOver) {
@@ -121,14 +131,20 @@ public class GameMaster : NetworkComponent {
 
   private bool ArePlayersReady() {
     bool isReady = false;
-    if (MyCore.Connections.Count >= minimumPlayers) {
-      isReady = true;
 
+    if (MyCore.Connections.Count >= minimumPlayers) {
+      int numPlayersReady = 0;
       NetPlayerManager[] netPlayerManagers = GameObject.FindObjectsOfType<NetPlayerManager>();
-      foreach (NetPlayerManager npm in netPlayerManagers) {
-        if (!npm.IsReady) {
-          isReady = false;
-          break;
+
+      if (netPlayerManagers.Length >= minimumPlayers) {
+        foreach (NetPlayerManager npm in netPlayerManagers) {
+          if (npm.IsReady) {
+            numPlayersReady++;
+          }
+        }
+
+        if (numPlayersReady == netPlayerManagers.Length) {
+          isReady = true;
         }
       }
     }
@@ -146,13 +162,13 @@ public class GameMaster : NetworkComponent {
     level.transform.SetParent(root.transform);
 
     // Spawn enemies
-    GameObject[] runnerSpawners = GameObject.FindGameObjectsWithTag("RunnerSpawner");
-    GameObject[] flyerSpawners = GameObject.FindGameObjectsWithTag("FlyerSpawner");
-    GameObject[] gunnerSpawners = GameObject.FindGameObjectsWithTag("GunnerSpawner");
+    //GameObject[] runnerSpawners = GameObject.FindGameObjectsWithTag("RunnerSpawner");
+    //GameObject[] flyerSpawners = GameObject.FindGameObjectsWithTag("FlyerSpawner");
+    //GameObject[] gunnerSpawners = GameObject.FindGameObjectsWithTag("GunnerSpawner");
 
-    SpawnPrefab(runnerSpawners, prefabTypes["EnemyRunner"]);
-    SpawnPrefab(flyerSpawners, prefabTypes["EnemyFlyer"]);
-    SpawnPrefab(gunnerSpawners, prefabTypes["EnemyGunner"]);
+    //SpawnPrefab(runnerSpawners, prefabTypes["EnemyRunner"]);
+    //SpawnPrefab(flyerSpawners, prefabTypes["EnemyFlyer"]);
+    //SpawnPrefab(gunnerSpawners, prefabTypes["EnemyGunner"]);
 
     // Spawn items
     GameObject[] coinSpawners = GameObject.FindGameObjectsWithTag("CoinSpawner");
@@ -166,27 +182,25 @@ public class GameMaster : NetworkComponent {
   }
 
   private void EndGame() {
-    // Destroy players
-    GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
-    foreach (GameObject player in players) {
-      int playerNetId = player.GetComponent<NetworkID>().NetId;
-      MyCore.NetDestroyObject(playerNetId);
-    }
-
-    // Disconnect players - DOES NOT WORK
-    GameObject[] netPlayerManagers = GameObject.FindGameObjectsWithTag("NPM");
-    foreach (GameObject npm in netPlayerManagers) {
-      int npmNetId = npm.GetComponent<NetworkID>().NetId;
-      MyCore.NetDestroyObject(npmNetId);
-      MyCore.Disconnect(npmNetId);
-    }
+    // Destroy players, enemies, and items
+    DestroyPrefabInstances("Player");
+    DestroyPrefabInstances("Enemy");
+    DestroyPrefabInstances("Item");
 
     // Destroy level
     GameObject level = GameObject.FindGameObjectWithTag("Level");
     MyCore.NetDestroyObject(level.GetComponent<NetworkID>().NetId);
 
+    GetPlayerScores();
+    foreach (KeyValuePair<string, int> playerScore in playerScores) {
+      GameObject scorePanel = MyCore.NetCreateObject(prefabTypes["Score"], Owner);
+
+      scorePanel.GetComponent<Score>().PlayerName = playerScore.Key;
+      scorePanel.GetComponent<Score>().PlayerScore = playerScore.Value;
+    }
+
     SendUpdate("GAMEOVER", true.ToString());
-    StartCoroutine(ResetGame());
+    //StartCoroutine(ResetGame());
   }
 
   private IEnumerator ResetGame() {
@@ -204,15 +218,31 @@ public class GameMaster : NetworkComponent {
     }
   }
 
+  private void DestroyPrefabInstances(string tag) {
+    GameObject[] instances = GameObject.FindGameObjectsWithTag(tag);
+    foreach (GameObject instance in instances) {
+      int netId = instance.GetComponent<NetworkID>().NetId;
+      MyCore.NetDestroyObject(netId);
+    }
+  }
+
   private void SpawnPlayers() {
     int i = 0;
     GameObject[] spawnPoints = GameObject.FindGameObjectsWithTag("SpawnPoint");
     NetPlayerManager[] netPlayerManagers = GameObject.FindObjectsOfType<NetPlayerManager>();
     foreach (NetPlayerManager npm in netPlayerManagers) {
-      // Create players and set spawn position
       GameObject player = MyCore.NetCreateObject(prefabTypes["Player"], npm.Owner, spawnPoints[i].transform.position);
       player.GetComponent<NetJumperController>().Name = npm.Name;
+      StartCoroutine(npm.DecreaseTimeToGoal());
       i += 1;
+    }
+  }
+
+  private void GetPlayerScores() {
+    NetPlayerManager[] netPlayerManagers = GameObject.FindObjectsOfType<NetPlayerManager>();
+
+    foreach (NetPlayerManager npm in netPlayerManagers) {
+      playerScores.Add(npm.Name, npm.Score);
     }
   }
 }
