@@ -38,9 +38,11 @@ public class NetInputController : NetworkComponent {
   public override void NetworkedStart() { }
 
   public override void HandleMessage(string flag, string value) {
-    if (flag == "DIRECTION") { 
+    if (flag == "DIRECTION") {
+      Direction = int.Parse(value);
+
       if (IsServer) {
-        Direction = int.Parse(value);
+        SendUpdate(flag, value);
       }
     }
 

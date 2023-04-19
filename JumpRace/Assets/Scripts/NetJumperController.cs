@@ -29,6 +29,8 @@ public class NetJumperController : NetworkComponent {
   private float minJumpSpeed; // minimum jump speed, used if jumpSpeed is too low
   private float maxJumpSpeed; // maximum jump speed, used if jumpSpeed passes upper limit
 
+  private bool facingRight;
+
   #endregion
 
   #region PROPERTIES
@@ -57,6 +59,7 @@ public class NetJumperController : NetworkComponent {
     jumpSpeed = 0f;
     minJumpSpeed = 12f;
     maxJumpSpeed = 20f;
+    facingRight = false;
   }
 
   void Update() {
@@ -64,7 +67,7 @@ public class NetJumperController : NetworkComponent {
       animator.SetFloat("xVelocity", rb.velocity.x);
       animator.SetFloat("yVelocity", rb.velocity.y);
       animator.SetFloat("jumpCharge", jumpSpeed);
-      animator.SetInteger("xDirection", input.Direction);
+      animator.SetInteger("jumpDirection", input.Direction);
       animator.SetBool("isGrounded", IsGrounded);
     }
 
