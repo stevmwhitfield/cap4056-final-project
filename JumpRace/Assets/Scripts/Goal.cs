@@ -28,6 +28,7 @@ public class Goal : NetworkComponent {
         foreach (NetPlayerManager npm in netPlayerManagers) {
           if (npm.Owner == playerOwner) {
             npm.HasReachedGoal = true;
+            npm.CalculateScore();
           }
         }
       }

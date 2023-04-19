@@ -13,8 +13,14 @@ public class GameMaster : NetworkComponent {
 
   private readonly Dictionary<string, int> prefabTypes = new Dictionary<string, int>();
   private Dictionary<string, int> playerScores = new Dictionary<string, int>();
-  private float secondsPerGame = 300f;
+  //private float secondsPerGame = 300f;
   private int minimumPlayers = 1;
+
+  #endregion
+
+  #region PROPERTIES
+
+  public int GameTime { get; set; } = 300;
 
   #endregion
 
@@ -124,7 +130,12 @@ public class GameMaster : NetworkComponent {
   #region GAME_CYCLE
 
   private IEnumerator GameTimer() {
-    yield return new WaitForSecondsRealtime(secondsPerGame);
+    while (GameTime > 0) {
+      yield return new WaitForSecondsRealtime(1f);
+      GameTime -= 1;
+    }
+    GameTime = 0;
+    //yield return new WaitForSecondsRealtime(secondsPerGame);
     isGameRunning = false;
     isGameOver = true;
   }
@@ -233,7 +244,7 @@ public class GameMaster : NetworkComponent {
     foreach (NetPlayerManager npm in netPlayerManagers) {
       GameObject player = MyCore.NetCreateObject(prefabTypes["Player"], npm.Owner, spawnPoints[i].transform.position);
       player.GetComponent<NetJumperController>().Name = npm.Name;
-      StartCoroutine(npm.DecreaseTimeToGoal());
+      //StartCoroutine(npm.DecreaseTimeToGoal());
       i += 1;
     }
   }

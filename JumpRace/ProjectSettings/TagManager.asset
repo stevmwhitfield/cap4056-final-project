@@ -20,6 +20,7 @@ TagManager:
   - CoinSpawner
   - PlayerScore
   - Item
+  - GameTime
   layers:
   - Default
   - TransparentFX

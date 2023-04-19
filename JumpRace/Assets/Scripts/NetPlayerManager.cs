@@ -19,7 +19,8 @@ public class NetPlayerManager : NetworkComponent {
 
   public string Name { get; set; } = "";
   public int TimeToGoal { get; set; } = 300;
-  public int Score => TimeToGoal + CoinsCollected * 20;
+  public int Score { get; set; } = 0;
+  //public int Score => TimeToGoal + CoinsCollected * 20;
   public int CoinsCollected { get; set; } = 0;
   public bool IsReady { get; set; } = false;
   public bool HasReachedGoal { get; set; } = false;
@@ -125,7 +126,12 @@ public class NetPlayerManager : NetworkComponent {
     while (TimeToGoal > 0 && !HasReachedGoal) {
       yield return new WaitForSecondsRealtime(1f);
       TimeToGoal -= 1;
-      Debug.Log($"{Name}: {Score}");
+      Debug.Log($"{Name}: {TimeToGoal}");
     }
+  }
+
+  public void CalculateScore() {
+    GameMaster gm = GameObject.FindObjectOfType<GameMaster>();
+    Score = gm.GameTime + CoinsCollected * 20;
   }
 }
