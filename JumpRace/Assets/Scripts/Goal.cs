@@ -3,7 +3,6 @@ using UnityEngine;
 using NETWORK_ENGINE;
 
 public class Goal : NetworkComponent {
-  public AudioSource audioSource;
   public AudioClip audioClip;
 
   #region NETWORK_ENGINE
@@ -20,8 +19,13 @@ public class Goal : NetworkComponent {
 
   private void OnTriggerEnter2D(Collider2D collision) {
     if (collision.gameObject.tag == "Player") {
+      GameObject player = collision.gameObject;
+
+      if (IsClient) {
+        player.GetComponent<AudioSource>().PlayOneShot(audioClip);
+      }
+
       if (IsServer) {
-        GameObject player = collision.gameObject;
         int playerNetId = player.GetComponent<NetworkID>().NetId;
         int playerOwner = player.GetComponent<NetworkID>().Owner;
 
@@ -34,10 +38,6 @@ public class Goal : NetworkComponent {
             npm.CalculateScore();
           }
         }
-      }
-
-      if (IsClient) {
-        audioSource.PlayOneShot(audioClip);
       }
     }
   }

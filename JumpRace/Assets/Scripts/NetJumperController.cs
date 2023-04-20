@@ -9,6 +9,8 @@ public class NetJumperController : NetworkComponent {
   public AudioSource audioSource;
   public AudioClip jumpClip;
   public AudioClip crashClip;
+  public AudioClip collectCoinClip;
+  public AudioClip completeLevelClip;
 
   [SerializeField]
   private Rigidbody2D rb;

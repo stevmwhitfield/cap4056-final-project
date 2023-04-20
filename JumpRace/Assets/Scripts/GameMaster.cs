@@ -13,7 +13,7 @@ public class GameMaster : NetworkComponent {
 
   private readonly Dictionary<string, int> prefabTypes = new Dictionary<string, int>();
   private Dictionary<string, int> playerScores = new Dictionary<string, int>();
-  private int minimumPlayers = 1;
+  private int minimumPlayers = 2;
 
   #endregion
 
@@ -52,6 +52,10 @@ public class GameMaster : NetworkComponent {
           // Hide lobby screen
           Canvas lobbyCanvas = GameObject.FindGameObjectWithTag("PlayerHolder").transform.parent.GetComponent<Canvas>();
           lobbyCanvas.enabled = false;
+
+          // Hide disconnect button
+          GameObject disconnectButton = GameObject.FindGameObjectWithTag("NetworkManager").transform.GetChild(0).GetChild(1).gameObject;
+          disconnectButton.SetActive(false);
         }
       }
     }

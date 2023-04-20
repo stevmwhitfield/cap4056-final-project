@@ -3,7 +3,6 @@ using UnityEngine;
 using NETWORK_ENGINE;
 
 public class Item : NetworkComponent {
-  public AudioSource audioSource;
   public AudioClip audioClip;
 
   #region NETWORK_ENGINE
@@ -20,8 +19,9 @@ public class Item : NetworkComponent {
 
   private void OnTriggerEnter2D(Collider2D collision) {
     if (collision.gameObject.tag == "Player") {
+      GameObject player = collision.gameObject;
+
       if (IsServer) {
-        GameObject player = collision.gameObject;
         int playerOwner = player.GetComponent<NetworkID>().Owner;
 
         NetPlayerManager[] netPlayerManagers = GameObject.FindObjectsOfType<NetPlayerManager>();
@@ -35,7 +35,7 @@ public class Item : NetworkComponent {
       }
 
       if (IsClient) {
-        audioSource.PlayOneShot(audioClip);
+        player.GetComponent<AudioSource>().PlayOneShot(audioClip);
       }
     }
   }

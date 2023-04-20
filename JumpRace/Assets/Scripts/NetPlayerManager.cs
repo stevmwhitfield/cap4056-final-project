@@ -35,8 +35,15 @@ public class NetPlayerManager : NetworkComponent {
     }
 
     try {
-      Transform playerHolderTransform = GameObject.FindGameObjectWithTag("PlayerHolder").transform;
-      transform.SetParent(playerHolderTransform, false);
+      GameMaster gm = FindObjectOfType<GameMaster>();
+
+      if (gm.isGameReady || gm.isGameRunning) {
+        MyCore.NetDestroyObject(MyId.NetId);
+      }
+      else {
+        Transform playerHolderTransform = GameObject.FindGameObjectWithTag("PlayerHolder").transform;
+        transform.SetParent(playerHolderTransform, false);
+      }
     }
     catch {
       Debug.Log("ERROR: Object with tag \"PlayerHolder\" not found!");
