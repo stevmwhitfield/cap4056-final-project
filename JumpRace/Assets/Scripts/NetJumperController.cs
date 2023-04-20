@@ -6,6 +6,10 @@ using NETWORK_ENGINE;
 public class NetJumperController : NetworkComponent {
   #region FIELDS
 
+  public AudioSource audioSource;
+  public AudioClip jumpClip;
+  public AudioClip crashClip;
+
   [SerializeField]
   private Rigidbody2D rb;
 
@@ -101,6 +105,15 @@ public class NetJumperController : NetworkComponent {
       Camera.main.orthographic = true;
       Camera.main.orthographicSize = 11.25f;
     }
+
+    if (IsClient && !IsLocalPlayer) {
+      try {
+        GetComponent<SpriteRenderer>().color = new Color(1f, 1f, 1f, 0.5f);
+      }
+      catch {
+        throw new System.Exception($"ERROR: {name} failed to change SpriteRenderer color!");
+      }
+    }
   }
 
   public override void HandleMessage(string flag, string value) {
@@ -113,8 +126,15 @@ public class NetJumperController : NetworkComponent {
 
     if (flag == "JUMP_SPEED") {
       jumpSpeed = float.Parse(value);
+
       if (IsServer) {
         SendUpdate(flag, value);
+      }
+    }
+
+    if (flag == "JUMP_SFX") {
+      if (IsClient) {
+        audioSource.PlayOneShot(jumpClip);
       }
     }
   }
@@ -155,6 +175,7 @@ public class NetJumperController : NetworkComponent {
 
       if (jumpSpeed >= maxJumpSpeed) {
         rb.velocity = new(VelocityX, maxJumpSpeed);
+        SendUpdate("JUMP_SFX", "1");
         Invoke("ResetJumpSpeed", 0.025f);
       }
     }
@@ -162,10 +183,12 @@ public class NetJumperController : NetworkComponent {
     if (!IsJumping) {
       if (jumpSpeed >= minJumpSpeed) {
         rb.velocity = new(VelocityX, jumpSpeed);
+        SendUpdate("JUMP_SFX", "1");
         Invoke("ResetJumpSpeed", 0.025f);
       }
       else if (jumpSpeed > 0) {
         rb.velocity = new(VelocityX, minJumpSpeed);
+        SendUpdate("JUMP_SFX", "1");
         Invoke("ResetJumpSpeed", 0.025f);
       }
     }

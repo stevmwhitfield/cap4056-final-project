@@ -3,6 +3,9 @@ using UnityEngine;
 using NETWORK_ENGINE;
 
 public class Goal : NetworkComponent {
+  public AudioSource audioSource;
+  public AudioClip audioClip;
+
   #region NETWORK_ENGINE
 
   public override void NetworkedStart() { }
@@ -34,7 +37,7 @@ public class Goal : NetworkComponent {
       }
 
       if (IsClient) {
-        // play sfx/vfx
+        audioSource.PlayOneShot(audioClip);
       }
     }
   }

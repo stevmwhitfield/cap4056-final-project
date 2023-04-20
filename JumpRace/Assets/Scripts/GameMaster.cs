@@ -13,7 +13,6 @@ public class GameMaster : NetworkComponent {
 
   private readonly Dictionary<string, int> prefabTypes = new Dictionary<string, int>();
   private Dictionary<string, int> playerScores = new Dictionary<string, int>();
-  //private float secondsPerGame = 300f;
   private int minimumPlayers = 1;
 
   #endregion
@@ -63,7 +62,6 @@ public class GameMaster : NetworkComponent {
       if (IsServer) {
         if (isGameOver) {
           Debug.Log("Game over");
-          //CalculatePlayerScores();
         }
       }
 
@@ -80,6 +78,10 @@ public class GameMaster : NetworkComponent {
       isGameReady = false;
       isGameRunning = false;
       isGameOver = false;
+
+      if (IsServer) {
+        StartCoroutine(SlowUpdate());
+      }
 
       if (IsClient) {
         // Hide score screen
@@ -135,7 +137,6 @@ public class GameMaster : NetworkComponent {
       GameTime -= 1;
     }
     GameTime = 0;
-    //yield return new WaitForSecondsRealtime(secondsPerGame);
     isGameRunning = false;
     isGameOver = true;
   }
@@ -211,11 +212,17 @@ public class GameMaster : NetworkComponent {
     }
 
     SendUpdate("GAMEOVER", true.ToString());
-    //StartCoroutine(ResetGame());
+    StartCoroutine(ResetGame());
   }
 
   private IEnumerator ResetGame() {
-    yield return new WaitForSeconds(5f);
+    yield return new WaitForSeconds(10f);
+
+    // Disconnect all players
+    NetPlayerManager[] netPlayerManagers = GameObject.FindObjectsOfType<NetPlayerManager>();
+    foreach (NetPlayerManager npm in netPlayerManagers) {
+      npm.MyCore.UI_Quit();
+    }
     SendUpdate("RESET", "1");
   }
 
