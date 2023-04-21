@@ -194,6 +194,12 @@ public class GameMaster : NetworkComponent {
     // Spawn players
     SpawnPlayers();
 
+    // Remove game from lobby manager
+    if (FindObjectOfType<LobbyManager>() != null) {
+      FindObjectOfType<LobbyManager>().NotifyGameStarted();
+    }
+    MyCore.StopListening();
+
     SendUpdate("READY", isGameReady.ToString());
   }
 
