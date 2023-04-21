@@ -1897,6 +1897,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mainCanvas: {fileID: 0}
   settingsCanvas: {fileID: 0}
+  creditsCanvas: {fileID: 0}
 --- !u!82 &1277055818 stripped
 AudioSource:
   m_CorrespondingSourceObject: {fileID: 6239340857852550536, guid: d604cacf126206c468aebac2f871dd80, type: 3}
@@ -2615,9 +2616,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: faa3c0b1ce93b53448f5d6edda383bee, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  OutputConsole: {fileID: 0}
+  MaxConsoleLogSize: 1024
   UsingUDP: 0
+  IsListening: 0
+  IsServer: 0
+  IsClient: 0
+  IsConnected: 0
+  AppNumber: 0
+  conCounter: 0
+  IP: 
+  PortNumber: 0
+  MaxConnections: 0
   MasterTimer: 0.01
   LocalConnectionID: -1
+  CycleTrigger: 3
   UseMenuManager: 1
   DisconnectScreen: {fileID: 0}
   ObjectCounter: 0
@@ -2627,7 +2640,7 @@ MonoBehaviour:
   - {fileID: 1345834175907713941, guid: 02a4628b8e9fa0042b794d581a7ebc4d, type: 3}
   - {fileID: 6697479769701084191, guid: dee1c52ffff36cf42a5de47144178bb3, type: 3}
   - {fileID: 7982378916847876802, guid: 74c43c4151b29bd4c997a842255318f3, type: 3}
-  - {fileID: 1164010820513209033, guid: 67a54d70845bdd544833cbf2473907c9, type: 3}
+  - {fileID: 8893810424697790222, guid: 67a54d70845bdd544833cbf2473907c9, type: 3}
   - {fileID: 6900687873634467881, guid: 9e867efd90a42a14190c7e1adec7b703, type: 3}
   - {fileID: 6670806189238522211, guid: 60517bf1e66139f46b8bc8daaf445a44, type: 3}
   - {fileID: 8841082940818430922, guid: e3fa53d3ba4571f4f84f222783f23765, type: 3}
