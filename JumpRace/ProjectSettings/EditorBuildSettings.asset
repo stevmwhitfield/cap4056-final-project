@@ -11,4 +11,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/L1_LAN.unity
     guid: c9ade405e013e494c8c5f60ac7de62f1
+  - enabled: 1
+    path: Assets/Scenes/L2_WAN.unity
+    guid: 1777b0c9101246c4d91d744a6edebc82
   m_configObjects: {}
